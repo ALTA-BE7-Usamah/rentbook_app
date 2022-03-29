@@ -31,6 +31,7 @@ func RegisterBookPath(e *echo.Echo, bh *_bookHandler.BookHandler) {
 
 func RegisterRentPath(e *echo.Echo, rh *_rentHandler.RentHandler) {
 	e.POST("/rent", rh.RentBookHandler(), _middlewares.JWTMiddleware())
-	e.GET("/rent", rh.GetListRent(), _middlewares.JWTMiddleware())
-	e.GET("/rent/:id", rh.GetRentByID(), _middlewares.JWTMiddleware())
+	e.GET("/rent", rh.GetListRentHandler(), _middlewares.JWTMiddleware())
+	e.GET("/rent/:id", rh.GetRentByIDHandler(), _middlewares.JWTMiddleware())
+	e.POST("/rent/:id", rh.ReturnBookHandler(), _middlewares.JWTMiddleware())
 }

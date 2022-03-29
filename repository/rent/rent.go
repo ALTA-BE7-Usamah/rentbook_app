@@ -18,13 +18,15 @@ func NewRentRepository(db *gorm.DB) *RentRepository {
 }
 
 func (rr *RentRepository) RentBook(rent _entities.Rent, bookID uint) (_entities.Rent, error) {
-	var rentFind _entities.Rent
+	var rentFind []_entities.Rent
 	txFind := rr.database.Where("book_id = ?", bookID).Find(&rentFind)
 	if txFind.Error != nil {
 		return rent, txFind.Error
 	}
-	if rentFind.BookID == bookID {
-		return rent, errors.New("book is not available")
+	for i := 0; i < len(rentFind); i++ {
+		if rentFind[i].BookID == bookID && rentFind[i].ReturnStatus == "" {
+			return rent, errors.New("book is not available")
+		}
 	}
 
 	tx := rr.database.Save(&rent)
@@ -54,6 +56,14 @@ func (rr *RentRepository) GetRentByID(id uint, idToken uint) (_entities.Rent, in
 	}
 	if rent.UserID != idToken {
 		return rent, 0, errors.New("id not recognise")
+	}
+	return rent, int(tx.RowsAffected), nil
+}
+
+func (rr *RentRepository) ReturnBook(rent _entities.Rent) (_entities.Rent, int, error) {
+	tx := rr.database.Save(&rent)
+	if tx.Error != nil {
+		return rent, 0, tx.Error
 	}
 	return rent, int(tx.RowsAffected), nil
 }

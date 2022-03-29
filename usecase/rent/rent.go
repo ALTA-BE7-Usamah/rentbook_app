@@ -29,3 +29,19 @@ func (ruc *RentUseCase) GetRentByID(id uint, idToken uint) (_entities.Rent, int,
 	rent, rows, err := ruc.rentRepository.GetRentByID(id, idToken)
 	return rent, rows, err
 }
+
+func (ruc *RentUseCase) ReturnBook(rent _entities.Rent, id uint, idToken uint) (_entities.Rent, int, error) {
+	rentReturn, rows, err := ruc.rentRepository.GetRentByID(uint(id), uint(idToken))
+	if err != nil {
+		return rent, 0, err
+	}
+	if rows == 0 {
+		return rent, 0, nil
+	}
+	if rent.ReturnStatus != "" {
+		rentReturn.ReturnStatus = rent.ReturnStatus
+	}
+
+	updateRent, updateRows, updateErr := ruc.rentRepository.ReturnBook(rentReturn)
+	return updateRent, updateRows, updateErr
+}

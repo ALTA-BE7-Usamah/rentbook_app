@@ -47,7 +47,7 @@ func (rh *RentHandler) RentBookHandler() echo.HandlerFunc {
 	}
 }
 
-func (rh *RentHandler) GetListRent() echo.HandlerFunc {
+func (rh *RentHandler) GetListRentHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 
 		idToken, errToken := _middlewares.ExtractToken(c)
@@ -63,7 +63,7 @@ func (rh *RentHandler) GetListRent() echo.HandlerFunc {
 	}
 }
 
-func (rh *RentHandler) GetRentByID() echo.HandlerFunc {
+func (rh *RentHandler) GetRentByIDHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 
 		//mendapatkan id dari token yang dimasukkan
@@ -85,5 +85,37 @@ func (rh *RentHandler) GetRentByID() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("data not found"))
 		}
 		return c.JSON(http.StatusOK, helper.ResponseSuccess("success get rent", rent))
+	}
+}
+
+func (rh *RentHandler) ReturnBookHandler() echo.HandlerFunc {
+	return func(c echo.Context) error {
+
+		//mendapatkan id dari token yang dimasukkan
+		idToken, errToken := _middlewares.ExtractToken(c)
+		if errToken != nil {
+			return c.JSON(http.StatusUnauthorized, helper.ResponseFailed("unauthorized"))
+		}
+
+		idStr := c.Param("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed("id not recognise"))
+		}
+
+		var updateRent entities.Rent
+		errBind := c.Bind(&updateRent)
+		if errBind != nil {
+			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("failed to bind data. please check your data"))
+		}
+
+		rent, rows, error := rh.rentUseCase.ReturnBook(updateRent, uint(id), uint(idToken))
+		if error != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed("failed to fetch data"))
+		}
+		if rows == 0 {
+			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("data not found"))
+		}
+		return c.JSON(http.StatusOK, helper.ResponseSuccess("success return book", rent))
 	}
 }
