@@ -19,7 +19,7 @@ func NewRentRepository(db *gorm.DB) *RentRepository {
 
 func (rr *RentRepository) RentBook(rent _entities.Rent, bookID uint) (_entities.Rent, error) {
 	var rentFind []_entities.Rent
-	// mendapatkan data Book menggunakan ID Book
+	// mendapatkan data Rent menggunakan ID Book
 	txFind := rr.database.Where("book_id = ?", bookID).Find(&rentFind)
 	if txFind.Error != nil {
 		return rent, txFind.Error
@@ -47,7 +47,7 @@ func (rr *RentRepository) RentBook(rent _entities.Rent, bookID uint) (_entities.
 // mencari daftar buku yang disewa oleh user yang login
 func (rr *RentRepository) GetListRent(userID uint) ([]_entities.Rent, error) {
 	var rents []_entities.Rent
-	tx := rr.database.Where("user_id = ?", userID).Find(&rents)
+	tx := rr.database.Preload("User").Preload("Book").Where("user_id = ?", userID).Find(&rents)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -57,7 +57,7 @@ func (rr *RentRepository) GetListRent(userID uint) ([]_entities.Rent, error) {
 // mencari data penyewaan buku sesuai id penyewaan
 func (rr *RentRepository) GetRentByID(id uint, idToken uint) (_entities.Rent, int, error) {
 	var rent _entities.Rent
-	tx := rr.database.Find(&rent, id)
+	tx := rr.database.Preload("User").Preload("Book").Find(&rent, id)
 	if tx.Error != nil {
 		return rent, 0, tx.Error
 	}
