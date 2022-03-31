@@ -9,5 +9,6 @@ type Book struct {
 	Catagory  string `json:"catagory" form:"catagory"`
 	Author    string `json:"author" form:"author"`
 	Publisher string `json:"publisher" form:"publisher"`
+	Status    string `gorm:"default:avalaible" json:"status" form:"status"`
 	Rent      *Rent  `gorm:"foreignKey:BookID;references:ID"`
 }

@@ -43,7 +43,13 @@ func (rh *RentHandler) RentBookHandler() echo.HandlerFunc {
 		if error != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed("not available"))
 		}
-		return c.JSON(http.StatusOK, helper.ResponseSuccess("success rent book", rent))
+		responseRent := map[string]interface{}{
+			"ID":      rent.ID,
+			"user_id": rent.UserID,
+			"book_id": rent.BookID,
+			"address": rent.Address,
+		}
+		return c.JSON(http.StatusOK, helper.ResponseSuccess("success rent book", responseRent))
 	}
 }
 
@@ -59,7 +65,26 @@ func (rh *RentHandler) GetListRentHandler() echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed("failed to fetch data"))
 		}
-		return c.JSON(http.StatusOK, helper.ResponseSuccess("success get all rent", rents))
+
+		responseRent := []map[string]interface{}{}
+		for i := 0; i < len(rents); i++ {
+			response := map[string]interface{}{
+				"ID":      rents[i].ID,
+				"user_id": rents[i].UserID,
+				"book_id": rents[i].BookID,
+				"user": map[string]interface{}{
+					"ID":    rents[i].User.ID,
+					"name":  rents[i].User.Name,
+					"email": rents[i].User.Email},
+				"book": map[string]interface{}{
+					"ID":        rents[i].Book.ID,
+					"title":     rents[i].Book.Title,
+					"author":    rents[i].Book.Author,
+					"publisher": rents[i].Book.Publisher},
+			}
+			responseRent = append(responseRent, response)
+		}
+		return c.JSON(http.StatusOK, helper.ResponseSuccess("success get all rent", responseRent))
 	}
 }
 
@@ -84,7 +109,21 @@ func (rh *RentHandler) GetRentByIDHandler() echo.HandlerFunc {
 		if rows == 0 {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("data not found"))
 		}
-		return c.JSON(http.StatusOK, helper.ResponseSuccess("success get rent", rent))
+		responseRent := map[string]interface{}{
+			"ID":      rent.ID,
+			"user_id": rent.UserID,
+			"book_id": rent.BookID,
+			"user": map[string]interface{}{
+				"ID":    rent.User.ID,
+				"name":  rent.User.Name,
+				"email": rent.User.Email},
+			"book": map[string]interface{}{
+				"ID":        rent.Book.ID,
+				"title":     rent.Book.Title,
+				"author":    rent.Book.Author,
+				"publisher": rent.Book.Publisher},
+		}
+		return c.JSON(http.StatusOK, helper.ResponseSuccess("success get rent", responseRent))
 	}
 }
 
@@ -103,19 +142,13 @@ func (rh *RentHandler) ReturnBookHandler() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed("id not recognise"))
 		}
 
-		var updateRent entities.Rent
-		errBind := c.Bind(&updateRent)
-		if errBind != nil {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("failed to bind data. please check your data"))
-		}
-
-		rent, rows, error := rh.rentUseCase.ReturnBook(updateRent, uint(id), uint(idToken))
+		_, rows, error := rh.rentUseCase.ReturnBook(uint(id), uint(idToken))
 		if error != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed("failed to fetch data"))
 		}
 		if rows == 0 {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("data not found"))
 		}
-		return c.JSON(http.StatusOK, helper.ResponseSuccess("success return book", rent))
+		return c.JSON(http.StatusOK, helper.ResponseSuccessWithoutData("success return book"))
 	}
 }

@@ -28,11 +28,11 @@ func (uh *UserHandler) CreateUserHandler() echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("failed to bind data. please check your data"))
 		}
-		user, error := uh.userUseCase.CreatUser(newUser)
+		_, error := uh.userUseCase.CreatUser(newUser)
 		if error != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed("failed to fetch data"))
 		}
-		return c.JSON(http.StatusOK, helper.ResponseSuccess("success create user", user))
+		return c.JSON(http.StatusOK, helper.ResponseSuccessWithoutData("success create user"))
 	}
 }
 
@@ -62,7 +62,12 @@ func (uh *UserHandler) GetUserHandler() echo.HandlerFunc {
 		if rows == 0 {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("data not found"))
 		}
-		return c.JSON(http.StatusOK, helper.ResponseSuccess("success get user", user))
+		responseUser := map[string]interface{}{
+			"ID":    user.ID,
+			"name":  user.Name,
+			"email": user.Email,
+		}
+		return c.JSON(http.StatusOK, helper.ResponseSuccess("success get user", responseUser))
 	}
 }
 
@@ -99,7 +104,12 @@ func (uh *UserHandler) UpdateUserHandler() echo.HandlerFunc {
 		if rows == 0 {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("data not found"))
 		}
-		return c.JSON(http.StatusOK, helper.ResponseSuccess("success update user", user))
+		responseUser := map[string]interface{}{
+			"ID":    user.ID,
+			"name":  user.Name,
+			"email": user.Email,
+		}
+		return c.JSON(http.StatusOK, helper.ResponseSuccess("success update user", responseUser))
 	}
 }
 

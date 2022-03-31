@@ -27,7 +27,19 @@ func (bh *BookHandler) GetAllBookHandler() echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed("failed to fetch data"))
 		}
-		return c.JSON(http.StatusOK, helper.ResponseSuccess("success get all books", books))
+		responseBooks := []map[string]interface{}{}
+		for i := 0; i < len(books); i++ {
+			response := map[string]interface{}{
+				"ID":        books[i].ID,
+				"Title":     books[i].Title,
+				"Catagory":  books[i].Catagory,
+				"Author":    books[i].Author,
+				"Publisher": books[i].Publisher,
+				"Status":    books[i].Status,
+			}
+			responseBooks = append(responseBooks, response)
+		}
+		return c.JSON(http.StatusOK, helper.ResponseSuccess("success get all books", responseBooks))
 	}
 }
 
@@ -45,7 +57,15 @@ func (bh *BookHandler) GetBookHandler() echo.HandlerFunc {
 		if rows == 0 {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("data not found"))
 		}
-		return c.JSON(http.StatusOK, helper.ResponseSuccess("success get user", book))
+		responseBook := map[string]interface{}{
+			"ID":        book.ID,
+			"Title":     book.Title,
+			"Catagory":  book.Catagory,
+			"Author":    book.Author,
+			"Publisher": book.Publisher,
+			"Status":    book.Status,
+		}
+		return c.JSON(http.StatusOK, helper.ResponseSuccess("success get user", responseBook))
 	}
 }
 
@@ -64,11 +84,11 @@ func (bh *BookHandler) CreateBookHandler() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("failed to bind data. please check your data"))
 		}
 		newBook.UserID = uint(idToken)
-		book, error := bh.bookUseCase.CreatBook(newBook)
+		_, error := bh.bookUseCase.CreatBook(newBook)
 		if error != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed("failed to fetch data"))
 		}
-		return c.JSON(http.StatusOK, helper.ResponseSuccess("success create user", book))
+		return c.JSON(http.StatusOK, helper.ResponseSuccessWithoutData("success create user"))
 	}
 }
 
@@ -99,7 +119,15 @@ func (bh *BookHandler) UpdateBookHandler() echo.HandlerFunc {
 		if rows == 0 {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("data not found"))
 		}
-		return c.JSON(http.StatusOK, helper.ResponseSuccess("success update book", book))
+		responseBook := map[string]interface{}{
+			"ID":        book.ID,
+			"Title":     book.Title,
+			"Catagory":  book.Catagory,
+			"Author":    book.Author,
+			"Publisher": book.Publisher,
+			"Status":    book.Status,
+		}
+		return c.JSON(http.StatusOK, helper.ResponseSuccess("success update book", responseBook))
 	}
 }
 
